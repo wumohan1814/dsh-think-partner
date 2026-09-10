@@ -18,7 +18,7 @@ DSH 里每一项能力都是 `cordis.yml` 中的一行插件，而**一个 agent
 
 ```powershell
 # 1. 克隆
-git clone <本仓库地址> dsh-idea-forge
+git clone https://github.com/wumohan1814/dsh-think-partner.git dsh-idea-forge
 
 # 2. 把 idea-forge 目录复制进 DSH 的用户预设根目录
 Copy-Item -Recurse dsh-idea-forge\idea-forge "$env:USERPROFILE\.dsh\.agent-presets\"
@@ -96,7 +96,7 @@ Copy-Item -Recurse dsh-idea-forge\idea-forge "$env:USERPROFILE\.dsh\.agent-prese
 ## 仓库结构
 
 ```text
-idea-forge-preset/
+dsh-think-partner/          # 克隆下来的仓库目录
 ├── README.md
 ├── LICENSE
 └── idea-forge/              # ← 这个目录就是 preset，复制它
