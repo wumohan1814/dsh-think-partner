@@ -5,8 +5,8 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Platform: DeepSeek Harness](https://img.shields.io/badge/platform-DeepSeek%20Harness-000000.svg)](https://github.com/deepseek-ai/deepseek-harness)
 [![Type: agent preset](https://img.shields.io/badge/type-agent%20preset-6f42c1.svg)](#what-it-is)
+[![Editions: EN + 中文](https://img.shields.io/badge/editions-EN%20%2B%20%E4%B8%AD%E6%96%87-2ea44f.svg)](#two-editions)
 [![Skills: 3](https://img.shields.io/badge/skills-3-2ea44f.svg)](#built-in-skills)
-[![PRs welcome](https://img.shields.io/badge/PRs-welcome-2ea44f.svg)](#license--credits)
 [![GitHub stars](https://img.shields.io/github/stars/wumohan1814/dsh-think-partner?style=social)](https://github.com/wumohan1814/dsh-think-partner/stargazers)
 
 > Not another "let's brainstorm!" prompt. This is an agent preset that interrogates your idea the way a good technical co-founder would — one round of pointed questions at a time, each with a recommended answer, until nothing is left silently assumed.
@@ -18,6 +18,7 @@
 ## Table of contents
 
 - [What it is](#what-it-is)
+- [Two editions](#two-editions)
 - [Why it's different](#why-its-different)
 - [See it work](#see-it-work)
 - [Quick start](#quick-start)
@@ -39,6 +40,17 @@ This preset is built for exactly one job: **thinking an idea through** — refin
 It is deliberately **not** a coding agent. Shell, workflow orchestration and build tooling are all removed. What's left is a thinking partner with memory: file tools to write documents, web access to check facts, goals to keep long-running ideas alive across sessions, and subagents to delegate research.
 
 **Keywords:** DeepSeek Harness preset · structured reasoning · thinking partner · idea validation · decision tree · requirement elicitation · pre-mortem · second-order effects · agent skills.
+
+## Two editions
+
+| Edition | Directory | Preset id | Persona & skills | Name in the picker |
+|---|---|---|---|---|
+| **English** | [`think-partner/`](think-partner/) | `think-partner` | English | **Think Partner** |
+| **Chinese** | [`idea-forge/`](idea-forge/) | `idea-forge` | Chinese | **Think Partner 中文版** |
+
+The two editions are **functionally identical** — same tools, same interview protocol, same three skills. Only the language of the persona and the method documents differs. Install one, or both; they don't conflict.
+
+In this README, "the preset" means whichever edition you installed.
 
 ## Why it's different
 
@@ -84,17 +96,19 @@ You answer `1 agree, 2 yes but make it 10 users, 3 ...` and the next round is co
 
 ```powershell
 # 1. Clone
-git clone https://github.com/wumohan1814/dsh-think-partner.git dsh-idea-forge
+git clone https://github.com/wumohan1814/dsh-think-partner.git dsh-think-partner
 
-# 2. Copy the preset into your DSH preset root
-Copy-Item -Recurse dsh-idea-forge\idea-forge "$env:USERPROFILE\.dsh\.agent-presets\"
+# 2. Copy the edition you want into your DSH preset root
+Copy-Item -Recurse dsh-think-partner\think-partner "$env:USERPROFILE\.dsh\.agent-presets\"   # English
+
+Copy-Item -Recurse dsh-think-partner\idea-forge "$env:USERPROFILE\.dsh\.agent-presets\"      # Chinese (optional)
 ```
 
 The preset root is `${DSH_HOME:-$HOME/.dsh}/.agent-presets/` — adjust if you set `DSH_HOME`.
 
-Then restart DSH and pick **想法锻造（思考搭档）** in the preset picker. That's it: no config, no commands, no code.
+Then restart DSH and pick **Think Partner** (or **Think Partner 中文版**) in the preset picker. That's it: no config, no commands, no code.
 
-> The preset's id is `idea-forge`, taken from its directory name — it is independent of this repository's name.
+> A preset's id comes from its directory name, so the two directories must keep the names `think-partner` and `idea-forge`. They are independent of this repository's name.
 
 ## The workflow: refine → realize → advance
 
@@ -106,7 +120,7 @@ Then restart DSH and pick **想法锻造（思考搭档）** in the preset picke
 
 ## Built-in skills
 
-Three skills ship **inside the preset** (loaded via `customSkillDirs`) and load on demand:
+Three skills ship **inside each preset** (loaded via `customSkillDirs`) and load on demand:
 
 | Skill | What it does |
 |---|---|
@@ -137,12 +151,19 @@ This preset does **not** cite that audit as support for its own effectiveness �
 ## Repository layout
 
 ```text
-dsh-think-partner/          # the cloned repository
+dsh-think-partner/
 ├── README.md
 ├── LICENSE
-└── idea-forge/             # ← this directory IS the preset; copy it
-    ├── preset.yml          # name & description (shown in the picker)
-    ├── agent.cordis.yml    # the composition
+├── think-partner/          # ← English edition; copy this directory
+│   ├── preset.yml          # name & description (shown in the picker)
+│   ├── agent.cordis.yml    # the composition
+│   └── skills/
+│       ├── idea-grilling/SKILL.md
+│       ├── idea-divergence/SKILL.md
+│       └── idea-artifacts/SKILL.md
+└── idea-forge/             # ← Chinese edition; copy this directory
+    ├── preset.yml
+    ├── agent.cordis.yml
     └── skills/
         ├── idea-grilling/SKILL.md
         ├── idea-divergence/SKILL.md
@@ -151,15 +172,15 @@ dsh-think-partner/          # the cloned repository
 
 ## Known limitations
 
-- **Mount-validated only.** `agentPresets.standingKeyFor()` passes, which proves the composition mounts and the `customSkillDirs` config takes effect. It does **not** list skills, so whether the three skills appear in a session's skill catalog still needs confirming in a real session.
+- **Mount-validated only.** `agentPresets.standingKeyFor()` passes for both editions, which proves the compositions mount and the `customSkillDirs` config takes effect. It does **not** list skills, so whether the three skills appear in a session's skill catalog still needs confirming in a real session.
 - **Round-based questioning is a contested default.** Practitioners who read slowly, work in a second language, or use one-question-at-a-time as focus scaffolding often prefer sequential. Edit section 4 of the persona if that's you.
-- **Written for Chinese interaction.** The persona and skills are in Chinese; the preset will answer in whatever language you write in, but its method documents are Chinese.
+- **The two editions can drift.** They are maintained as parallel copies; fixes must be applied to both.
 
 ## License & credits
 
 MIT — see [LICENSE](LICENSE).
 
-The composition derives from DeepSeek Harness's `standard` preset (`@deepseek-ai/dsh-agent-presets`, MIT). The three skills are original to this repository.
+The compositions derive from DeepSeek Harness's `standard` preset (`@deepseek-ai/dsh-agent-presets`, MIT). The skills in both editions are original to this repository.
 
 Mechanisms were inspired by — **without copying any text from** — these projects:
 
@@ -185,6 +206,15 @@ If this is useful to you, a ⭐ helps other people find it.
 
 它刻意**不是**编码 Agent：Shell、workflow 编排、构建工具全部移除。留下的是一个有记忆的思考搭档——文件工具用来写文档，联网用来查证事实，goal 目标让长期想法跨会话存活，子代理用来委派调研。
 
+## 两个版本
+
+| 版本 | 目录 | preset id | persona 与技能 | 选择器里的名称 |
+|---|---|---|---|---|
+| **英文版** | [`think-partner/`](think-partner/) | `think-partner` | 英文 | **Think Partner** |
+| **中文版** | [`idea-forge/`](idea-forge/) | `idea-forge` | 中文 | **Think Partner 中文版** |
+
+两个版本**功能完全一致**——相同的工具、相同的访谈协议、相同的三个技能，只有 persona 与方法论文档的语言不同。可以只装一个，也可以都装，它们不冲突。
+
 ## 它凭什么不一样
 
 **1. 它拷问你，而不是附和你。**
@@ -206,17 +236,19 @@ If this is useful to you, a ⭐ helps other people find it.
 
 ```powershell
 # 1. 克隆
-git clone https://github.com/wumohan1814/dsh-think-partner.git dsh-idea-forge
+git clone https://github.com/wumohan1814/dsh-think-partner.git dsh-think-partner
 
-# 2. 把 preset 复制进 DSH 的用户预设根目录
-Copy-Item -Recurse dsh-idea-forge\idea-forge "$env:USERPROFILE\.dsh\.agent-presets\"
+# 2. 把你要的版本复制进 DSH 的用户预设根目录
+Copy-Item -Recurse dsh-think-partner\idea-forge "$env:USERPROFILE\.dsh\.agent-presets\"      # 中文版
+
+Copy-Item -Recurse dsh-think-partner\think-partner "$env:USERPROFILE\.dsh\.agent-presets\"   # 英文版（可选）
 ```
 
 预设根目录是 `${DSH_HOME:-$HOME/.dsh}/.agent-presets/`，设置过 `DSH_HOME` 请相应替换。
 
-重启 DSH，在预设选择器里选 **想法锻造（思考搭档）**。就这样：不需要配置、不需要命令、不需要代码。
+重启 DSH，在预设选择器里选 **Think Partner 中文版**（或 **Think Partner**）。就这样：不需要配置、不需要命令、不需要代码。
 
-> preset 的 id 是 `idea-forge`（取自目录名），与仓库名无关。
+> preset 的 id 取自目录名，所以两个目录必须保持叫 `think-partner` 与 `idea-forge`。它们与仓库名无关。
 
 ## 工作循环：细化 → 落实 → 推进
 
@@ -228,7 +260,7 @@ Copy-Item -Recurse dsh-idea-forge\idea-forge "$env:USERPROFILE\.dsh\.agent-prese
 
 ## 内置技能
 
-三个技能**随 preset 一起分发**（通过 `customSkillDirs` 加载），按需加载：
+三个技能**随每个版本一起分发**（通过 `customSkillDirs` 加载），按需加载：
 
 | 技能 | 作用 |
 |---|---|
@@ -259,12 +291,19 @@ Copy-Item -Recurse dsh-idea-forge\idea-forge "$env:USERPROFILE\.dsh\.agent-prese
 ## 仓库结构
 
 ```text
-dsh-think-partner/          # 克隆下来的仓库目录
+dsh-think-partner/
 ├── README.md
 ├── LICENSE
-└── idea-forge/             # ← 这个目录就是 preset，复制它
-    ├── preset.yml          # 名称与描述（选择器可见）
-    ├── agent.cordis.yml    # 组成文件
+├── think-partner/          # ← 英文版；复制这个目录
+│   ├── preset.yml          # 名称与描述（选择器可见）
+│   ├── agent.cordis.yml    # 组成文件
+│   └── skills/
+│       ├── idea-grilling/SKILL.md
+│       ├── idea-divergence/SKILL.md
+│       └── idea-artifacts/SKILL.md
+└── idea-forge/             # ← 中文版；复制这个目录
+    ├── preset.yml
+    ├── agent.cordis.yml
     └── skills/
         ├── idea-grilling/SKILL.md
         ├── idea-divergence/SKILL.md
@@ -273,15 +312,15 @@ dsh-think-partner/          # 克隆下来的仓库目录
 
 ## 已知限制
 
-- **只做过挂载校验。** `agentPresets.standingKeyFor()` 通过，证明组成可挂载、`customSkillDirs` 配置生效；但它**不列出技能**，所以三个技能是否真的出现在会话技能目录里，仍需在真实会话中确认。
+- **只做过挂载校验。** 两个版本的 `agentPresets.standingKeyFor()` 都通过，证明组成可挂载、`customSkillDirs` 配置生效；但它**不列出技能**，所以三个技能是否真的出现在会话技能目录里，仍需在真实会话中确认。
 - **轮次式提问是有争议的默认值。** 慢读者、非母语者、把逐题当专注脚手架的人，往往更适合一次问一题。如果你属于这类，改 persona 第四节即可。
-- **为中文交互编写。** persona 与技能均为中文；你用什么语言提问它就用什么语言回答，但它的方法论文档是中文。
+- **两个版本会各自漂移。** 它们是并行维护的两份拷贝，任何修订都要同时改两边。
 
 ## 许可与出处
 
 MIT，见 [LICENSE](LICENSE)。
 
-组成派生自 DeepSeek Harness 的 `standard` 预设（`@deepseek-ai/dsh-agent-presets`，MIT）。三个技能为本仓库原创。
+组成派生自 DeepSeek Harness 的 `standard` 预设（`@deepseek-ai/dsh-agent-presets`，MIT）。两个版本中的技能均为本仓库原创。
 
 机制灵感来源（**未复制其任何文本**）：
 
