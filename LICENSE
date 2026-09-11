@@ -24,10 +24,12 @@ SOFTWARE.
 
 Upstream notices
 
-`idea-forge/agent.cordis.yml` is derived from the `standard` agent preset
-shipped with DeepSeek Harness, distributed in the npm package
-`@deepseek-ai/dsh-agent-presets`, which is licensed under the MIT License
-(https://github.com/deepseek-ai/deepseek-harness). The upstream MIT notice is
-reproduced above and applies to those derived portions.
+This repository contains material derived from third-party projects, including
+the `standard` agent preset shipped with DeepSeek Harness (MIT, Copyright (c)
+2026 DeepSeek). The full license notices that those licenses require to be
+preserved are reproduced in THIRD_PARTY_NOTICES.md at the root of this
+repository.
 
-The skills under `idea-forge/skills/` are original to this repository.
+The MIT text above applies to this repository's own work. The upstream notices
+in THIRD_PARTY_NOTICES.md govern the portions derived from their respective
+projects.

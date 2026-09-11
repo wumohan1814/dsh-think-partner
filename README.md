@@ -178,15 +178,18 @@ dsh-think-partner/
 
 ## License & credits
 
-MIT — see [LICENSE](LICENSE).
+MIT — see [LICENSE](LICENSE). Third-party material, and the upstream notices those licenses require to be preserved, are recorded in **[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)**.
 
-The compositions derive from DeepSeek Harness's `standard` preset (`@deepseek-ai/dsh-agent-presets`, MIT). The skills in both editions are original to this repository.
+The compositions derive from DeepSeek Harness's `standard` preset (MIT, © 2026 DeepSeek).
 
-Mechanisms were inspired by — **without copying any text from** — these projects:
+The three skills are original to this repository, with two real debts:
 
-- [mattpocock/skills](https://github.com/mattpocock/skills) — the decision-tree / frontier / round interview protocol, and the facts-vs-decisions split
-- [johnlindquist/claude](https://github.com/johnlindquist/claude) — divergent techniques, evaluation matrices, pre-mortem / second-order / opportunity cost
-- [tjboudreaux/cc-thinking-skills](https://github.com/tjboudreaux/cc-thinking-skills) — the skill template (trigger / non-trigger boundary / procedure / checks), mechanism absorption, and mechanism-fit dispatch
+- **`idea-grilling` is adapted from** [mattpocock/skills](https://github.com/mattpocock/skills)' `grilling` skill (MIT, © 2026 Matt Pocock). The design-tree / frontier / round model, the numbered-question-plus-recommendation format and the facts-vs-decisions split follow it closely. The when-not-to-use boundaries, stop signals, anti-pattern list and self-check were written for this repository.
+- **The skill template and dispatch rules follow** [tjboudreaux/cc-thinking-skills](https://github.com/tjboudreaux/cc-thinking-skills) (MIT, © 2025 TJ Boudreaux): a precise trigger, a non-trigger boundary, a procedure and checks; the mechanism-absorption findings; and "route by mechanism fit, not habit".
+
+The technique list in `idea-divergence` also draws on [johnlindquist/claude](https://github.com/johnlindquist/claude), which **declares no license**. Only pre-existing public frameworks (SCAMPER, Six Thinking Hats, pre-mortem, second-order effects, opportunity cost) and short functional phrases were taken from it — no document text. It deserves the credit regardless.
+
+Thanks to all three authors. If any attribution here is wrong, open an issue and it will be corrected.
 
 If this is useful to you, a ⭐ helps other people find it.
 
@@ -318,14 +321,17 @@ dsh-think-partner/
 
 ## 许可与出处
 
-MIT，见 [LICENSE](LICENSE)。
+MIT，见 [LICENSE](LICENSE)。第三方材料，以及那些许可证要求一并保留的上游声明，全部记录在 **[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)**。
 
-组成派生自 DeepSeek Harness 的 `standard` 预设（`@deepseek-ai/dsh-agent-presets`，MIT）。两个版本中的技能均为本仓库原创。
+组成派生自 DeepSeek Harness 的 `standard` 预设（MIT，© 2026 DeepSeek）。
 
-机制灵感来源（**未复制其任何文本**）：
+三个技能为本仓库原创，但有两笔实实在在的债：
 
-- [mattpocock/skills](https://github.com/mattpocock/skills) —— 决策树／前沿／轮次的访谈协议、事实与决策的分工
-- [johnlindquist/claude](https://github.com/johnlindquist/claude) —— 发散技法、评估矩阵、pre-mortem／二阶效应／机会成本
-- [tjboudreaux/cc-thinking-skills](https://github.com/tjboudreaux/cc-thinking-skills) —— 技能模板（触发／非触发边界／过程／校验）、机制吸收、按机制分派
+- **`idea-grilling` 改写自** [mattpocock/skills](https://github.com/mattpocock/skills) 的 `grilling` 技能（MIT，© 2026 Matt Pocock）。决策树／前沿／轮次模型、编号问题＋推荐答案的格式、事实与决策的分工，都紧随其原型。而「何时不要用」边界、停止信号、反模式清单与自查表是为本仓库写的。
+- **技能文档模板与分派规则沿用** [tjboudreaux/cc-thinking-skills](https://github.com/tjboudreaux/cc-thinking-skills)（MIT，© 2025 TJ Boudreaux）：精确触发、非触发边界、过程、校验这套结构；机制吸收的结论；以及「按机制适配、不按习惯」的分派纪律。
+
+`idea-divergence` 的技法清单还参考了 [johnlindquist/claude](https://github.com/johnlindquist/claude)，该仓库**未声明任何许可证**。从中取用的只有公开既有框架（SCAMPER、六顶思考帽、pre-mortem、二阶效应、机会成本）与少量通用短句——没有任何文档正文。这份致谢无论如何都是应当的。
+
+感谢以上三位作者。如果这里的署名有误，请开 issue，会立刻修正。
 
 如果它对你有用，点个 ⭐ 能让更多人找到它。
