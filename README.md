@@ -1,75 +1,240 @@
-# idea-forge — DSH 想法锻造（思考搭档）
+# dsh-think-partner
 
-一个给 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)（DSH）使用的 **agent preset**。
+**A structured thinking partner for DeepSeek Harness.** Turn a vague idea into a decision-complete plan — then keep moving it forward. No code required.
 
-不写代码，只靠深度推理，帮用户把一个**模糊的想法**经过「细化 → 落实 → 推进」的循环，变成清晰、可执行、可持续推进的成果。
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Platform: DeepSeek Harness](https://img.shields.io/badge/platform-DeepSeek%20Harness-000000.svg)](https://github.com/deepseek-ai/deepseek-harness)
+[![Type: agent preset](https://img.shields.io/badge/type-agent%20preset-6f42c1.svg)](#what-it-is)
+[![Skills: 3](https://img.shields.io/badge/skills-3-2ea44f.svg)](#built-in-skills)
+[![PRs welcome](https://img.shields.io/badge/PRs-welcome-2ea44f.svg)](#license--credits)
+[![GitHub stars](https://img.shields.io/github/stars/wumohan1814/dsh-think-partner?style=social)](https://github.com/wumohan1814/dsh-think-partner/stargazers)
+
+> Not another "let's brainstorm!" prompt. This is an agent preset that interrogates your idea the way a good technical co-founder would — one round of pointed questions at a time, each with a recommended answer, until nothing is left silently assumed.
+
+**English** · [中文文档](#中文文档)
 
 ---
 
+## Table of contents
+
+- [What it is](#what-it-is)
+- [Why it's different](#why-its-different)
+- [See it work](#see-it-work)
+- [Quick start](#quick-start)
+- [The workflow: refine → realize → advance](#the-workflow-refine--realize--advance)
+- [Built-in skills](#built-in-skills)
+- [Tools](#tools)
+- [Design notes](#design-notes)
+- [On evidence — please read](#on-evidence--please-read)
+- [Repository layout](#repository-layout)
+- [Known limitations](#known-limitations)
+- [License & credits](#license--credits)
+
+## What it is
+
+`dsh-think-partner` is an **agent preset** for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (DSH). In DSH, every capability is a plugin row in a `cordis.yml`, and an agent preset decides which tools and prompt sections one session gets.
+
+This preset is built for exactly one job: **thinking an idea through** — refining it, making it concrete, and advancing it across many sessions.
+
+It is deliberately **not** a coding agent. Shell, workflow orchestration and build tooling are all removed. What's left is a thinking partner with memory: file tools to write documents, web access to check facts, goals to keep long-running ideas alive across sessions, and subagents to delegate research.
+
+**Keywords:** DeepSeek Harness preset · structured reasoning · thinking partner · idea validation · decision tree · requirement elicitation · pre-mortem · second-order effects · agent skills.
+
+## Why it's different
+
+Three things separate this from "You are a helpful brainstorming assistant."
+
+**1. It interrogates instead of agreeing.**
+Your idea becomes a **decision tree**. Each round asks only the **frontier** — the questions whose prerequisites are already settled, and nothing else — and **every question ships with a recommended answer**, so you can reply by number:
+
+```
+1 yes · 2 option B · 3 no, because…
+```
+
+Thirteen questions land in about three rounds, not thirteen. Two questions never share a round if one depends on the other.
+
+**2. Facts are its job. Decisions are yours.**
+If an answer is discoverable — in your files, on the web, in a competitor's pricing page — it goes and finds it, or dispatches a subagent, instead of asking you. Only what is genuinely *yours* — goals, constraints, tradeoffs, taste — comes back as a question. And it does not answer your decisions for you; an agent that does has stopped running this protocol.
+
+**3. Nothing gets built before you confirm.**
+The interview ends when the frontier is empty **and** you explicitly confirm you're on the same page. Until then: no "final plan", no documents, no drift into execution.
+
+## See it work
+
+A real round looks like this — numbered, each with its recommendation, answerable in one line:
+
+```
+❓ Q1 — Who is the target user: individual developers or teams?
+   This decides pricing and whether collaboration features matter.
+
+➡️ I'd go individual-developer-first. Teams have longer decision chains,
+   which conflicts with your "validate in two weeks" constraint.
+
+---
+
+❓ Q2 — Is "validated" a measurable criterion or a gut call?
+
+➡️ Make it "20 real users complete one full task within two weeks".
+   It's observable and doesn't depend on your judgement.
+```
+
+You answer `1 agree, 2 yes but make it 10 users, 3 ...` and the next round is computed from your answers.
+
+## Quick start
+
+```powershell
+# 1. Clone
+git clone https://github.com/wumohan1814/dsh-think-partner.git dsh-idea-forge
+
+# 2. Copy the preset into your DSH preset root
+Copy-Item -Recurse dsh-idea-forge\idea-forge "$env:USERPROFILE\.dsh\.agent-presets\"
+```
+
+The preset root is `${DSH_HOME:-$HOME/.dsh}/.agent-presets/` — adjust if you set `DSH_HOME`.
+
+Then restart DSH and pick **想法锻造（思考搭档）** in the preset picker. That's it: no config, no commands, no code.
+
+> The preset's id is `idea-forge`, taken from its directory name — it is independent of this repository's name.
+
+## The workflow: refine → realize → advance
+
+**Refine** — run the interview protocol above, and collapse fuzzy or overloaded wording into precise definitions the moment you hit it. ("You're saying *user* — do you mean the paying customer or the end user? Those are different things.")
+
+**Realize** — produce an executable document: problem definition → solution space and tradeoffs → recommended path → milestones *with acceptance criteria* → risks and mitigations → the next minimal action. Written to `idea/` in your working directory.
+
+**Advance** — a new session starts by reading the existing documents and goal state, picks up where you left off, and never re-asks a settled decision. Periodic review asks the three questions that matter: *What changed? Which assumption died? Which direction should we drop?*
+
+## Built-in skills
+
+Three skills ship **inside the preset** (loaded via `customSkillDirs`) and load on demand:
+
+| Skill | What it does |
+|---|---|
+| `idea-grilling` | The full interview protocol: decision tree, frontier, rounds, question format, anti-patterns, stop signals |
+| `idea-divergence` | Divergent techniques (SCAMPER, reverse brainstorming, constraint removal) and convergent evaluation (scoring matrix, pre-mortem, second-order effects, reversibility triage) |
+| `idea-artifacts` | Document conventions: plan skeleton, glossary, decision records (the three-condition ADR test), progress log |
+
+## Tools
+
+| Kept | Removed |
+|---|---|
+| File read/write/search, web search & fetch, goals, plan mode, todos, ask-user, subagents (spawn/fork), background jobs, compaction | Shell (bash/pwsh), workflow, ralph |
+
+## Design notes
+
+**The interview protocol lives in both the persona and the skills.** Upstream projects document that a skill naming another skill does not reliably cause it to load. So the non-negotiable rules sit in the persona and the depth sits in the skills — if a skill never loads, the behaviour still holds.
+
+**Frameworks are dispatched by mechanism, not stacked by habit.** The default answer is "no framework, just reason". A framework is used only when its mechanism matches the problem, at most three at a time, each answering a question the others don't. Near-synonyms never stack — inversion has been absorbed into pre-mortem, so it isn't counted twice.
+
+**Every skill carries a non-trigger boundary.** Small and reversible task, a user who just wants one fact, a decision already made — these don't get the interview treatment. Without that boundary, methodology degrades into ritual.
+
+## On evidence — please read
+
+Thinking-framework skills have **weak empirical support**, and this repository won't pretend otherwise. [tjboudreaux/cc-thinking-skills](https://github.com/tjboudreaux/cc-thinking-skills) published an unusually self-critical audit of its own catalog: its best directional result (scientific-method) was **+4.0pp — below the author's own +5pp utility margin**; socratic scoring was **−6.9pp (negative)**; 14 of 28 skills were never measured. The author consequently marked every skill manual-only and never auto-invoked.
+
+This preset does **not** cite that audit as support for its own effectiveness — it demonstrates that the whole category is under-evidenced. The justification here is a **design rationale** (removing silent assumptions, making the user's decisions cheap), not a measured lift. The interview protocol in particular is question-based, while those benchmarks measure model task accuracy **with no human in the loop** — they neither validate nor invalidate it. **It is simply untested.**
+
+## Repository layout
+
+```text
+dsh-think-partner/          # the cloned repository
+├── README.md
+├── LICENSE
+└── idea-forge/             # ← this directory IS the preset; copy it
+    ├── preset.yml          # name & description (shown in the picker)
+    ├── agent.cordis.yml    # the composition
+    └── skills/
+        ├── idea-grilling/SKILL.md
+        ├── idea-divergence/SKILL.md
+        └── idea-artifacts/SKILL.md
+```
+
+## Known limitations
+
+- **Mount-validated only.** `agentPresets.standingKeyFor()` passes, which proves the composition mounts and the `customSkillDirs` config takes effect. It does **not** list skills, so whether the three skills appear in a session's skill catalog still needs confirming in a real session.
+- **Round-based questioning is a contested default.** Practitioners who read slowly, work in a second language, or use one-question-at-a-time as focus scaffolding often prefer sequential. Edit section 4 of the persona if that's you.
+- **Written for Chinese interaction.** The persona and skills are in Chinese; the preset will answer in whatever language you write in, but its method documents are Chinese.
+
+## License & credits
+
+MIT — see [LICENSE](LICENSE).
+
+The composition derives from DeepSeek Harness's `standard` preset (`@deepseek-ai/dsh-agent-presets`, MIT). The three skills are original to this repository.
+
+Mechanisms were inspired by — **without copying any text from** — these projects:
+
+- [mattpocock/skills](https://github.com/mattpocock/skills) — the decision-tree / frontier / round interview protocol, and the facts-vs-decisions split
+- [johnlindquist/claude](https://github.com/johnlindquist/claude) — divergent techniques, evaluation matrices, pre-mortem / second-order / opportunity cost
+- [tjboudreaux/cc-thinking-skills](https://github.com/tjboudreaux/cc-thinking-skills) — the skill template (trigger / non-trigger boundary / procedure / checks), mechanism absorption, and mechanism-fit dispatch
+
+If this is useful to you, a ⭐ helps other people find it.
+
+---
+
+# 中文文档
+
+**给 DeepSeek Harness 用的结构化思考搭档。** 把一个模糊的想法，变成决策完备的方案，然后持续推进它。不需要写代码。
+
+> 不是又一个「我们来头脑风暴吧」的提示词。这是一个 agent preset：它像一位好的技术合伙人那样拷问你的想法——每轮只问一组有指向性的问题，每个问题都附带推荐答案，直到没有东西被默默假设掉。
+
 ## 它是什么
 
-DSH 里每一项能力都是 `cordis.yml` 中的一行插件，而**一个 agent preset 决定一个会话贡献哪些工具与提示词段落**。`idea-forge` 就是这样一个 preset：
+`dsh-think-partner` 是 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)（DSH）的 **agent preset**。在 DSH 里，每一项能力都是 `cordis.yml` 中的一行插件，而一个 agent preset 决定一个会话拿到哪些工具与提示词段落。
 
-- **不编程** — 移除了 Shell、workflow、ralph 等面向编码与多代理编排的插件行
-- **推理优先** — persona 内置结构化推理姿态、访谈协议与发散／收敛纪律
-- **推进导向** — 文件读写（沉淀文档）、联网查证、goal 目标（跨会话推进）、子代理（委派事实查证）
+这个 preset 只为一个任务而建：**把想法想透**——细化它、落实它、并跨多个会话推进它。
 
-## 安装
+它刻意**不是**编码 Agent：Shell、workflow 编排、构建工具全部移除。留下的是一个有记忆的思考搭档——文件工具用来写文档，联网用来查证事实，goal 目标让长期想法跨会话存活，子代理用来委派调研。
+
+## 它凭什么不一样
+
+**1. 它拷问你，而不是附和你。**
+你的想法会被建成一棵**决策树**。每轮只问**前沿**——所有前提已定、此刻能诚实提问的问题——并且**每个问题都附推荐答案**，你可以直接按编号回答：
+
+```
+1 同意 · 2 选第二个 · 3 不，因为…
+```
+
+13 个问题通常落成 3 轮，而不是 13 轮。只要两个问题互相依赖，它们绝不会出现在同一轮。
+
+**2. 事实归它，决策归你。**
+凡是能查到的——你的文件里、网上、竞品的定价页——它自己去查，或派子代理去查，而不是拿来问你。只有真正**属于你**的：目标、约束、取舍、口味，才会作为问题回到你面前。它也不会替你拍板；一旦替用户回答决策，这个协议就已经失效了。
+
+**3. 你没确认之前，什么都不产出。**
+访谈结束的条件是前沿为空，**并且**你明确确认双方理解一致。在那之前：没有「最终方案」，没有成品文档，也不会悄悄滑进执行。
+
+## 快速上手
 
 ```powershell
 # 1. 克隆
 git clone https://github.com/wumohan1814/dsh-think-partner.git dsh-idea-forge
 
-# 2. 把 idea-forge 目录复制进 DSH 的用户预设根目录
+# 2. 把 preset 复制进 DSH 的用户预设根目录
 Copy-Item -Recurse dsh-idea-forge\idea-forge "$env:USERPROFILE\.dsh\.agent-presets\"
 ```
 
-预设根目录是 `${DSH_HOME:-$HOME/.dsh}/.agent-presets/`，若你设置过 `DSH_HOME` 请相应替换。目录名就是预设 id，所以目标目录必须叫 `idea-forge`。
+预设根目录是 `${DSH_HOME:-$HOME/.dsh}/.agent-presets/`，设置过 `DSH_HOME` 请相应替换。
 
-安装后重启 DSH，在预设选择器中选择 **「想法锻造（思考搭档）」**。
+重启 DSH，在预设选择器里选 **想法锻造（思考搭档）**。就这样：不需要配置、不需要命令、不需要代码。
 
-## 用法
+> preset 的 id 是 `idea-forge`（取自目录名），与仓库名无关。
 
-不需要任何命令、配置或代码，直接把想法说给它听。
+## 工作循环：细化 → 落实 → 推进
 
-### 细化：访谈不是「一次问一句」，也不是「一次全问」
+**细化** —— 跑上面那套访谈协议；遇到含糊或一词多义的措辞，当场收敛成精确定义。（「你说的*用户*，指付费客户还是最终使用者？这是两个东西。」）
 
-它把想法建成一棵**决策树**，每轮只问**前沿**——所有前提已定、此刻能诚实提问的问题，并且**每个问题都带推荐答案**，你可以直接按编号回答：
+**落实** —— 产出可执行文档：问题定义 → 方案空间与权衡 → 推荐路径 → 里程碑（**含验收标准**）→ 风险与对策 → 下一步最小行动。写到工作目录的 `idea/` 下。
 
-```
-❓ **Q1 —— 目标用户是谁**：你说的「给开发者用」，指个人开发者还是团队？这决定后面定价与协作功能的取舍。
-
-➡️ 我倾向「个人开发者优先」。理由：团队决策链长，与你「两周内上线验证」的时间约束冲突。
-
----
-
-❓ **Q2 —— 成功标准**：「验证成功」是可验证判据，还是主观判断？
-
-➡️ 建议定为「两周内 20 个真实用户走完一次完整任务」。理由是它可观测，且不依赖你的判断。
-```
-
-两条硬规则：
-
-- **事实归它，决策归你。** 凡是环境、文件、网络能查到的事实，它自己查或派子代理去查，绝不拿来问你；只有目标、约束、取舍、口味这些**属于用户的决策**才会摆到你面前并等你回答。它不会自问自答你的决策。
-- **前沿为空 ≠ 可以开工。** 访谈结束的标志是问题问完**且你明确确认理解一致**，在此之前它不会交成品。
-
-### 落实：产出可执行文档
-
-问题定义 → 方案空间与权衡 → 推荐路径 → 里程碑（含验收标准）→ 风险与对策 → 下一步最小行动。落到工作目录的 `idea/` 下。
-
-### 推进：跨会话接着走
-
-新会话先读已有文档与目标状态，接着上次的进度继续，不重复已经定过的决策，并定期复盘：什么变了／哪个假设被推翻／哪个方向该放弃。
+**推进** —— 新会话先读已有文档与目标状态，接着上次继续，绝不重复追问已经定过的决策。定期复盘只问三个要紧的问题：*什么变了？哪个假设死了？哪个方向该放弃？*
 
 ## 内置技能
 
-三个技能随 preset 一起分发（放在 `idea-forge/skills/`，通过 `customSkillDirs` 加载），按需自动加载：
+三个技能**随 preset 一起分发**（通过 `customSkillDirs` 加载），按需加载：
 
 | 技能 | 作用 |
 |---|---|
-| `idea-grilling` | 完整访谈协议：决策树／前沿／轮次、问题格式、反模式、停止信号 |
-| `idea-divergence` | 发散技法（SCAMPER、反向头脑风暴、约束移除）与收敛评估（评估矩阵、pre-mortem、二阶效应、可逆性分类） |
-| `idea-artifacts` | 产出物规范：方案骨架、术语表、决策记录三条件、进展日志 |
+| `idea-grilling` | 完整访谈协议：决策树、前沿、轮次、问题格式、反模式、停止信号 |
+| `idea-divergence` | 发散技法（SCAMPER、反向头脑风暴、约束移除）与收敛评估（评分矩阵、pre-mortem、二阶效应、可逆性分类） |
+| `idea-artifacts` | 产出物规范：方案骨架、术语表、决策记录（三条件 ADR 判定）、进展日志 |
 
 ## 工具集
 
@@ -77,21 +242,19 @@ Copy-Item -Recurse dsh-idea-forge\idea-forge "$env:USERPROFILE\.dsh\.agent-prese
 |---|---|
 | 文件读写与检索、联网搜索与抓取、goal 目标、计划模式、todo、ask-user、子代理（spawn/fork）、后台任务、压缩 | Shell（bash/pwsh）、workflow、ralph |
 
-## 设计依据
+## 设计说明
 
-三处刻意的设计选择：
+**访谈协议同时写在 persona 和技能里。** 上游项目自己的文档记录了「命名另一个 skill 的 skill 不会可靠地触发加载」这一未修复问题。所以不可让步的规则放在 persona，深度放在技能——即使技能一次都没加载，行为依然成立。
 
-**1. 访谈协议同时写在 persona 和技能里。** 上游项目自己的文档记录了「命名另一个 skill 的 skill 不会可靠地触发加载」这一未修复问题，所以协议骨架必须能独立成立——即使技能一次都没被加载，行为也已经可用；技能只负责深度。
+**框架按机制分派，不按习惯堆叠。** 默认答案是「不用框架，直接推理」。只有当框架的机制正好对上问题才用，最多 3 个，且每个负责其他框架覆盖不到的独立问题。同义框架不许叠加——反转已被 pre-mortem 吸收，不重复计数。
 
-**2. 框架按机制分派，不按习惯堆叠。** 默认答案是「不用框架，直接推理」；只有机制正好对上才用，最多叠加 3 个且每个必须负责独立问题。同义框架不许叠加（例如「反转」已被 pre-mortem 吸收）。
+**每个技能都带非触发边界。** 任务小且可撤、用户只要一个事实、决策已经拍板——这些情况不走访谈流程。缺了这条，方法论会退化成仪式。
 
-**3. 每个技能都带非触发边界。** 任务小且可撤、用户只要一个事实、用户已拍板你只是落实——这些情况不走访谈流程。缺了这条，方法论会退化成仪式。
+## 关于证据，请务必读这一段
 
-### 关于证据的诚实说明
+思维框架类技能的**实证支持很弱**，本仓库不会假装不是。[tjboudreaux/cc-thinking-skills](https://github.com/tjboudreaux/cc-thinking-skills) 对自己那份目录做过一次少见的自省式审计：它最好的一条方向性结果（scientific-method）是 **+4.0pp，低于作者自设的 +5pp 效用门槛**；socratic 为 **−6.9pp（负面）**；28 个技能中 14 个从未测量。作者因此把全部技能标记为永不自动调用。
 
-这类「思维框架技能」的**实证支持很弱**。[tjboudreaux/cc-thinking-skills](https://github.com/tjboudreaux/cc-thinking-skills) 做过一份少见的自省式审计：它最好的一条方向性结果是 scientific-method **+4.0pp**，**低于作者自设的 +5pp 效用门槛**；socratic 为 **−6.9pp**（负面）；28 个技能中 14 个从未测量；作者因此把全部技能标记为**永不自动调用**。
-
-本 preset **没有**引用那份审计来支持自己的有效性——它恰恰说明整个品类的证据不足。这里的选择依据是**设计理由**（消除隐含假设、把用户的决策成本压到最低），不是测量出来的提升。尤其访谈协议是提问式的，而上述基准测的是**无真人在环的模型任务正确率**——它既不能证明也不能否定这种协议，**它只是未经验证**。
+本 preset **没有**引用那份审计来支持自己的有效性——它恰恰说明整个品类的证据都不足。这里的选择依据是**设计理由**（消除隐含假设、把用户的决策成本压到最低），不是测量出来的提升。尤其访谈协议是提问式的，而那些基准测的是**无真人在环**的模型任务正确率——既不能证明也不能否定它。**它只是未经验证。**
 
 ## 仓库结构
 
@@ -99,9 +262,9 @@ Copy-Item -Recurse dsh-idea-forge\idea-forge "$env:USERPROFILE\.dsh\.agent-prese
 dsh-think-partner/          # 克隆下来的仓库目录
 ├── README.md
 ├── LICENSE
-└── idea-forge/              # ← 这个目录就是 preset，复制它
-    ├── preset.yml           # 名称与描述（选择器可见）
-    ├── agent.cordis.yml     # 组成文件
+└── idea-forge/             # ← 这个目录就是 preset，复制它
+    ├── preset.yml          # 名称与描述（选择器可见）
+    ├── agent.cordis.yml    # 组成文件
     └── skills/
         ├── idea-grilling/SKILL.md
         ├── idea-divergence/SKILL.md
@@ -110,18 +273,20 @@ dsh-think-partner/          # 克隆下来的仓库目录
 
 ## 已知限制
 
-- **只做过挂载校验。** `agentPresets.standingKeyFor()` 通过，说明组成可挂载、`customSkillDirs` 配置生效；但挂载校验**不列出技能**，三个技能是否出现在会话技能目录中，需要在真实会话里确认。
-- **轮次式提问是有争议的默认值。** 上游实践者反馈：慢读者、非母语者、把逐题当专注脚手架的人更适合「一次问一题」。如果你更想要逐题节奏，改 persona 第四节即可。
-- **面向中文交互编写。** persona 与技能均为中文。
+- **只做过挂载校验。** `agentPresets.standingKeyFor()` 通过，证明组成可挂载、`customSkillDirs` 配置生效；但它**不列出技能**，所以三个技能是否真的出现在会话技能目录里，仍需在真实会话中确认。
+- **轮次式提问是有争议的默认值。** 慢读者、非母语者、把逐题当专注脚手架的人，往往更适合一次问一题。如果你属于这类，改 persona 第四节即可。
+- **为中文交互编写。** persona 与技能均为中文；你用什么语言提问它就用什么语言回答，但它的方法论文档是中文。
 
 ## 许可与出处
 
 MIT，见 [LICENSE](LICENSE)。
 
-组成文件派生自 DeepSeek Harness 的 `standard` 预设（`@deepseek-ai/dsh-agent-presets`，MIT）；`skills/` 下的三个技能为本仓库原创。
+组成派生自 DeepSeek Harness 的 `standard` 预设（`@deepseek-ai/dsh-agent-presets`，MIT）。三个技能为本仓库原创。
 
-机制灵感来源（**未复制其文本**）：
+机制灵感来源（**未复制其任何文本**）：
 
-- [mattpocock/skills](https://github.com/mattpocock/skills) — 决策树／前沿／轮次的访谈协议、事实与决策的分工
-- [johnlindquist/claude](https://github.com/johnlindquist/claude) — 发散技法与评估矩阵、pre-mortem／二阶效应／机会成本
-- [tjboudreaux/cc-thinking-skills](https://github.com/tjboudreaux/cc-thinking-skills) — 技能模板（触发／非触发边界／过程／校验）、机制吸收与去冗余、按机制分派的纪律
+- [mattpocock/skills](https://github.com/mattpocock/skills) —— 决策树／前沿／轮次的访谈协议、事实与决策的分工
+- [johnlindquist/claude](https://github.com/johnlindquist/claude) —— 发散技法、评估矩阵、pre-mortem／二阶效应／机会成本
+- [tjboudreaux/cc-thinking-skills](https://github.com/tjboudreaux/cc-thinking-skills) —— 技能模板（触发／非触发边界／过程／校验）、机制吸收、按机制分派
+
+如果它对你有用，点个 ⭐ 能让更多人找到它。
